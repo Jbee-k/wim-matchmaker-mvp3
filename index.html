@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WIM Matchmaker MVP - KAM Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            background: #f9f9f9;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-button:hover {
+            background: #f0f0f0;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="file"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .button-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .button-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .button-success {
+            background: #4caf50;
+        }
+
+        .button-success:hover {
+            background: #45a049;
+        }
+
+        .button-danger {
+            background: #f44336;
+        }
+
+        .button-danger:hover {
+            background: #da190b;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .pairing-card {
+            background: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .pairing-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .pairing-card.low-score {
+            border-color: #ff9800;
+            background: #fff8f0;
+        }
+
+        .pairing-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .pairing-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .score-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .score-badge.low {
+            background: #ff9800;
+        }
+
+        .score-breakdown {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .score-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .score-label {
+            color: #666;
+        }
+
+        .score-value {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .rationale {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #555;
+            border-left: 4px solid #667eea;
+        }
+
+        .rationale-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .pairing-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .pairing-actions button {
+            flex: 1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            background: #f0f0f0;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .submission-row {
+            font-size: 13px;
+        }
+
+        .submission-row td:first-child {
+            font-weight: 500;
+            color: #667eea;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-mentor {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-mentee {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .badge-approved {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-rejected {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #1565c0;
+        }
+
+        .export-section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .export-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .export-option {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .export-option:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .export-option p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-box h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .login-box .form-group {
+            margin-bottom: 20px;
+        }
+
+        .login-box button {
+            width: 100%;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .no-data p {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 20px;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab-button {
+                flex: 1 1 50%;
+            }
+
+            .stat-card .number {
+                font-size: 24px;
+            }
+
+            .pairing-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .score-badge {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="login-page" class="login-container">
+        <div class="login-box">
+            <h1>👩‍💼 WIM Matchmaker</h1>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter admin password">
+            </div>
+            <button onclick="login()">Login</button>
+            <p style="text-align: center; margin-top: 20px; font-size: 12px; color: #999;">
+                Default: kam2026
+            </p>
+        </div>
+    </div>
+
+    <div id="app-page" class="hidden">
+        <div class="container">
+            <header>
+                <h1>👩‍💼 WIM Matchmaker MVP</h1>
+                <p>AI-Powered Mentor-Mentee Matching for Women in Manufacturing</p>
+                <button onclick="logout()" style="margin-top: 15px; background: rgba(255,255,255,0.3);">Logout</button>
+            </header>
+
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchTab('settings')">⚙️ Settings</button>
+                <button class="tab-button" onclick="switchTab('submissions')">📝 Submissions</button>
+                <button class="tab-button" onclick="switchTab('matching')">🔄 Matching</button>
+                <button class="tab-button" onclick="switchTab('approved')">✅ Approved</button>
+                <button class="tab-button" onclick="switchTab('audit')">📋 Audit Trail</button>
+            </div>
+
+            <!-- SETTINGS TAB -->
+            <div id="settings" class="tab-content active">
+                <h2>Settings</h2>
+                <div class="info-box">
+                    <strong>Step 1:</strong> Create your Google Form with the Right Seat Onboarding Profile (17 questions). See the setup guide for details.
+                </div>
+                <div class="form-group">
+                    <label>Google Form Response Sheet URL</label>
+                    <input type="text" id="formUrl" placeholder="https://docs.google.com/spreadsheets/d/...">
+                    <p style="font-size: 12px; color: #999; margin-top: 5px;">
+                        After creating your Google Form, go to Responses → Create Spreadsheet. Copy the URL here.
+                    </p>
+                </div>
+                <button onclick="saveSettings()">Save Settings</button>
+                <div id="settingsAlert"></div>
+            </div>
+
+            <!-- SUBMISSIONS TAB -->
+            <div id="submissions" class="tab-content">
+                <h2>Participant Submissions</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Submissions</h3>
+                        <div class="number" id="totalCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Mentors</h3>
+                        <div class="number" id="mentorCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Mentees</h3>
+                        <div class="number" id="menteeCount">0</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Import Google Forms CSV</label>
+                    <input type="file" id="csvFile" accept=".csv">
+                    <p style="font-size: 12px; color: #999; margin-top: 5px;">
+                        Download CSV from your Google Sheet (File → Download → CSV) and upload here.
+                    </p>
+                </div>
+                <button onclick="importCSV()">Import CSV</button>
+                <div id="importAlert"></div>
+
+                <h3 style="margin-top: 30px;">Submissions List</h3>
+                <div id="submissionsList"></div>
+            </div>
+
+            <!-- MATCHING TAB -->
+            <div id="matching" class="tab-content">
+                <h2>Run Matching Algorithm</h2>
+                
+                <div class="info-box">
+                    <strong>Ready to match?</strong> Click the button below to run the algorithm. It will score every mentor-mentee combination and suggest optimal pairings.
+                </div>
+
+                <button class="button-success" onclick="runMatching()" style="width: 100%; padding: 15px; font-size: 16px;">
+                    🚀 Run Matching Algorithm
+                </button>
+
+                <div id="matchingAlert"></div>
+
+                <div id="matchingResults"></div>
+            </div>
+
+            <!-- APPROVED TAB -->
+            <div id="approved" class="tab-content">
+                <h2>Approved Pairings</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Approved Pairs</h3>
+                        <div class="number" id="approvedCount">0</div>
+                    </div>
+                </div>
+
+                <div id="approvedList"></div>
+
+                <div class="export-section">
+                    <h3>Export & Reveal</h3>
+                    <div class="export-option">
+                        <p><strong>Gmail Mail Merge CSV</strong> - For use with YAMM (Yet Another Mail Merge) in Gmail</p>
+                        <button onclick="exportMailMergeCSV()">Download Mail Merge CSV</button>
+                    </div>
+                    <div class="export-option">
+                        <p><strong>Audit JSON</strong> - Complete record of all decisions and scores</p>
+                        <button onclick="exportAuditJSON()">Download Audit JSON</button>
+                    </div>
+                    <div class="export-option">
+                        <p><strong>Trigger Match Reveal</strong> - Locks matches and notifies participants</p>
+                        <button class="button-danger" onclick="triggerReveal()">Trigger Match Reveal</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AUDIT TRAIL TAB -->
+            <div id="audit" class="tab-content">
+                <h2>Audit Trail</h2>
+                <p style="margin-bottom: 20px; color: #666;">Complete log of all actions taken in the Matchmaker.</p>
+                <div id="auditTrail"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // STATE MANAGEMENT
+        // ============================================
+        let state = {
+            isLoggedIn: false,
+            formUrl: localStorage.getItem('formUrl') || '',
+            submissions: JSON.parse(localStorage.getItem('submissions')) || [],
+            matchingResults: JSON.parse(localStorage.getItem('matchingResults')) || [],
+            approvedPairings: JSON.parse(localStorage.getItem('approvedPairings')) || [],
+            auditTrail: JSON.parse(localStorage.getItem('auditTrail')) || []
+        };
+
+        // ============================================
+        // AUTHENTICATION
+        // ============================================
+        function login() {
+            const password = document.getElementById('password').value;
+            if (password === 'kam2026') {
+                state.isLoggedIn = true;
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('app-page').classList.remove('hidden');
+                addAuditLog('LOGIN', 'Admin logged in');
+            } else {
+                alert('Invalid password');
+            }
+        }
+
+        function logout() {
+            state.isLoggedIn = false;
+            document.getElementById('app-page').classList.add('hidden');
+            document.getElementById('login-page').classList.remove('hidden');
+            document.getElementById('password').value = '';
+            addAuditLog('LOGOUT', 'Admin logged out');
+        }
+
+        // ============================================
+        // TAB SWITCHING
+        // ============================================
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Refresh tab content
+            if (tabName === 'submissions') refreshSubmissions();
+            if (tabName === 'matching') refreshMatching();
+            if (tabName === 'approved') refreshApproved();
+            if (tabName === 'audit') refreshAuditTrail();
+        }
+
+        // ============================================
+        // SETTINGS
+        // ============================================
+        function saveSettings() {
+            const url = document.getElementById('formUrl').value;
+            if (!url) {
+                showAlert('settingsAlert', 'Please enter a Google Form URL', 'error');
+                return;
+            }
+            localStorage.setItem('formUrl', url);
+            state.formUrl = url;
+            showAlert('settingsAlert', 'Settings saved successfully!', 'success');
+            addAuditLog('SETTINGS_SAVED', 'Form URL updated');
+        }
+
+        // ============================================
+        // CSV IMPORT
+        // ============================================
+        function importCSV() {
+            const file = document.getElementById('csvFile').files[0];
+            if (!file) {
+                showAlert('importAlert', 'Please select a CSV file', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csv = e.target.result;
+                    const lines = csv.split('\n');
+                    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+                    
+                    let newSubmissions = [];
+                    for (let i = 1; i < lines.length; i++) {
+                        if (!lines[i].trim()) continue;
+                        
+                        const values = lines[i].split(',');
+                        const submission = {
+                            id: Date.now() + i,
+                            timestamp: new Date().toISOString(),
+                            name: values[0]?.trim() || '',
+                            email: values[1]?.trim() || '',
+                            role: values[2]?.trim() || '',
+                            company: values[3]?.trim() || '',
+                            sector: values[4]?.trim() || '',
+                            userType: values[5]?.trim().toLowerCase() === 'mentor' ? 'Mentor' : 'Mentee',
+                            strengths: values[6]?.trim() || '',
+                            ceiling: values[7]?.trim() || '',
+                            focusArea: values[8]?.trim() || '',
+                            communicationStyle: values[9]?.trim() || '',
+                            capacity: values[10]?.trim() || '',
+                            dealBreakers: values[11]?.trim() || ''
+                        };
+                        
+                        // Avoid duplicates
+                        if (!state.submissions.find(s => s.email === submission.email)) {
+                            newSubmissions.push(submission);
+                        }
+                    }
+
+                    state.submissions = [...state.submissions, ...newSubmissions];
+                    localStorage.setItem('submissions', JSON.stringify(state.submissions));
+                    
+                    showAlert('importAlert', `Imported ${newSubmissions.length} new participants!`, 'success');
+                    addAuditLog('CSV_IMPORTED', `Imported ${newSubmissions.length} participants`);
+                    refreshSubmissions();
+                } catch (error) {
+                    showAlert('importAlert', 'Error parsing CSV: ' + error.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function refreshSubmissions() {
+            const mentors = state.submissions.filter(s => s.userType === 'Mentor');
+            const mentees = state.submissions.filter(s => s.userType === 'Mentee');
+            
+            document.getElementById('totalCount').textContent = state.submissions.length;
+            document.getElementById('mentorCount').textContent = mentors.length;
+            document.getElementById('menteeCount').textContent = mentees.length;
+
+            let html = '<table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Company</th><th>Type</th><th>Sector</th></tr></thead><tbody>';
+            
+            state.submissions.forEach(s => {
+                const badge = s.userType === 'Mentor' ? 'badge-mentor' : 'badge-mentee';
+                html += `<tr class="submission-row">
+                    <td>${s.name}</td>
+                    <td>${s.email}</td>
+                    <td>${s.role}</td>
+                    <td>${s.company}</td>
+                    <td><span class="badge ${badge}">${s.userType}</span></td>
+                    <td>${s.sector}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('submissionsList').innerHTML = html || '<div class="no-data"><p>No submissions yet</p></div>';
+        }
+
+        // ============================================
+        // MATCHING ALGORITHM
+        // ============================================
+        function calculateCompatibilityScore(mentor, mentee) {
+            let score = 0;
+
+            // 1. Focus Alignment (20 points)
+            if (mentor.focusArea && mentee.focusArea && mentor.focusArea.toLowerCase() === mentee.focusArea.toLowerCase()) {
+                score += 20;
+            } else if (mentor.focusArea && mentee.focusArea) {
+                score += 10;
+            }
+
+            // 2. Communication Style Match (15 points)
+            if (mentor.communicationStyle && mentee.communicationStyle) {
+                if (mentor.communicationStyle.toLowerCase() === mentee.communicationStyle.toLowerCase()) {
+                    score += 15;
+                } else {
+                    score += 8;
+                }
+            }
+
+            // 3. Sector Match (25 points)
+            if (mentor.sector && mentee.sector && mentor.sector.toLowerCase() === mentee.sector.toLowerCase()) {
+                score += 25;
+            } else if (mentor.sector && mentee.sector) {
+                score += 5; // Diversity bonus
+            }
+
+            // 4. Strengths vs Ceiling (20 points)
+            // If mentor's strength addresses mentee's ceiling
+            if (mentor.strengths && mentee.ceiling) {
+                const mentorStrengths = mentor.strengths.toLowerCase();
+                const menteeCeiling = mentee.ceiling.toLowerCase();
+                if (mentorStrengths.includes('operations') && menteeCeiling.includes('scaling')) score += 20;
+                else if (mentorStrengths.includes('sales') && menteeCeiling.includes('market')) score += 20;
+                else if (mentorStrengths.includes('team') && menteeCeiling.includes('people')) score += 20;
+                else score += 10;
+            }
+
+            // 5. Capacity Alignment (10 points)
+            if (mentor.capacity && mentee.capacity && mentor.capacity.toLowerCase() === mentee.capacity.toLowerCase()) {
+                score += 10;
+            }
+
+            // 6. Deal Breakers (hard stop)
+            if (mentor.dealBreakers && mentee.dealBreakers) {
+                if (mentor.dealBreakers.toLowerCase().includes('same company') && mentor.company === mentee.company) {
+                    return 0; // Hard stop
+                }
+            }
+
+            // 7. Diversity bonus (if different sector)
+            if (mentor.sector && mentee.sector && mentor.sector.toLowerCase() !== mentee.sector.toLowerCase()) {
+                score += 5; // Small bonus for cross-sector
+            }
+
+            return Math.min(score, 100);
+        }
+
+        function generateRationale(mentor, mentee, score) {
+            const rationales = [
+                `${mentor.name} is an excellent match for ${mentee.name}. With expertise in ${mentor.strengths}, ${mentor.name} can directly support ${mentee.name}'s goal of ${mentee.focusArea}. Both prefer a ${mentor.communicationStyle} mentoring style and have compatible availability.`,
+                
+                `We're pairing ${mentee.name} with ${mentor.name} because ${mentor.name}'s background in ${mentor.sector} and strengths in ${mentor.strengths} align well with ${mentee.name}'s ambition to ${mentee.focusArea}. Their communication styles are compatible, making for a productive mentorship.`,
+                
+                `${mentor.name} brings ${mentor.strengths} expertise that directly addresses ${mentee.name}'s ceiling in ${mentee.ceiling}. Both are committed to ${mentee.focusArea}, and their working styles complement each other well.`,
+                
+                `This pairing leverages ${mentor.name}'s ${mentor.strengths} to support ${mentee.name}'s development in ${mentee.focusArea}. With aligned capacity and communication preferences, this partnership is set for success.`,
+                
+                `${mentee.name} will benefit from ${mentor.name}'s experience in ${mentor.sector}. ${mentor.name}'s strength in ${mentor.strengths} directly supports ${mentee.name}'s goal to overcome their ceiling in ${mentee.ceiling}.`
+            ];
+
+            return rationales[Math.floor(Math.random() * rationales.length)];
+        }
+
+        function runMatching() {
+            const mentors = state.submissions.filter(s => s.userType === 'Mentor');
+            const mentees = state.submissions.filter(s => s.userType === 'Mentee');
+
+            if (mentors.length === 0 || mentees.length === 0) {
+                showAlert('matchingAlert', 'Need at least 1 mentor and 1 mentee to run matching', 'error');
+                return;
+            }
+
+            // Calculate all scores
+            let pairings = [];
+            mentees.forEach(mentee => {
+                let mentorScores = [];
+                mentors.forEach(mentor => {
+                    const score = calculateCompatibilityScore(mentor, mentee);
+                    if (score > 0) { // Only include non-zero scores
+                        mentorScores.push({
+                            mentor: mentor,
+                            score: score,
+                            rationale: generateRationale(mentor, mentee, score)
+                        });
+                    }
+                });
+
+                // Sort by score descending
+                mentorScores.sort((a, b) => b.score - a.score);
+
+                // Take top 3 options
+                pairings.push({
+                    mentee: mentee,
+                    options: mentorScores.slice(0, 3)
+                });
+            });
+
+            state.matchingResults = pairings;
+            localStorage.setItem('matchingResults', JSON.stringify(state.matchingResults));
+            addAuditLog('MATCHING_RUN', `Ran matching algorithm for ${mentees.length} mentees`);
+            
+            showAlert('matchingAlert', `Matching complete! Review ${mentees.length} pairings below.`, 'success');
+            refreshMatching();
+        }
+
+        function refreshMatching() {
+            if (state.matchingResults.length === 0) {
+                document.getElementById('matchingResults').innerHTML = '<div class="no-data"><p>No matching results yet. Run the algorithm first.</p></div>';
+                return;
+            }
+
+            let html = '';
+            state.matchingResults.forEach((pairing, idx) => {
+                html += `<div class="pairing-card ${pairing.options[0]?.score < 60 ? 'low-score' : ''}">
+                    <div class="pairing-header">
+                        <div class="pairing-title">
+                            Mentee #${idx + 1}: ${pairing.mentee.name}
+                        </div>
+                    </div>`;
+
+                pairing.options.forEach((option, optIdx) => {
+                    const isLow = option.score < 60;
+                    const label = optIdx === 0 ? '⭐ TOP MATCH' : optIdx === 1 ? '⭐ ALTERNATIVE' : '🌍 DIVERSITY';
+                    
+                    html += `<div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid ${isLow ? '#ff9800' : '#667eea'};">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <strong>${label}</strong>
+                            <span class="score-badge ${isLow ? 'low' : ''}">${option.score}%</span>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <strong>${option.mentor.name}</strong> - ${option.mentor.company} (${option.mentor.sector})
+                        </div>
+                        <div class="rationale">
+                            <div class="rationale-label">Why this match:</div>
+                            ${option.rationale}
+                        </div>
+                    </div>`;
+                });
+
+                html += `<div class="pairing-actions">
+                    <button class="button-success" onclick="approvePairing(${idx}, 0)">✅ Approve Top Match</button>
+                    <button class="button-secondary" onclick="rejectPairing(${idx})">❌ Reject All</button>
+                </div>
+                </div>`;
+            });
+
+            document.getElementById('matchingResults').innerHTML = html;
+        }
+
+        function approvePairing(pairingIdx, optionIdx) {
+            const pairing = state.matchingResults[pairingIdx];
+            const option = pairing.options[optionIdx];
+            
+            const approved = {
+                mentee: pairing.mentee,
+                mentor: option.mentor,
+                score: option.score,
+                rationale: option.rationale,
+                approvedAt: new Date().toISOString()
+            };
+
+            state.approvedPairings.push(approved);
+            localStorage.setItem('approvedPairings', JSON.stringify(state.approvedPairings));
+            
+            // Remove from matching results
+            state.matchingResults.splice(pairingIdx, 1);
+            localStorage.setItem('matchingResults', JSON.stringify(state.matchingResults));
+            
+            addAuditLog('PAIRING_APPROVED', `Approved: ${pairing.mentee.name} ↔ ${option.mentor.name} (${option.score}%)`);
+            
+            showAlert('matchingAlert', 'Pairing approved!', 'success');
+            refreshMatching();
+            refreshApproved();
+        }
+
+        function rejectPairing(pairingIdx) {
+            const pairing = state.matchingResults[pairingIdx];
+            addAuditLog('PAIRING_REJECTED', `Rejected all options for ${pairing.mentee.name}`);
+            
+            state.matchingResults.splice(pairingIdx, 1);
+            localStorage.setItem('matchingResults', JSON.stringify(state.matchingResults));
+            
+            showAlert('matchingAlert', 'Pairing rejected. Please manually pair or try again.', 'warning');
+            refreshMatching();
+        }
+
+        // ============================================
+        // APPROVED PAIRINGS
+        // ============================================
+        function refreshApproved() {
+            document.getElementById('approvedCount').textContent = state.approvedPairings.length;
+
+            if (state.approvedPairings.length === 0) {
+                document.getElementById('approvedList').innerHTML = '<div class="no-data"><p>No approved pairings yet</p></div>';
+                return;
+            }
+
+            let html = '<table><thead><tr><th>#</th><th>Mentee</th><th>Mentor</th><th>Company</th><th>Score</th><th>Action</th></tr></thead><tbody>';
+            
+            state.approvedPairings.forEach((pair, idx) => {
+                html += `<tr>
+                    <td>${idx + 1}</td>
+                    <td>${pair.mentee.name}</td>
+                    <td>${pair.mentor.name}</td>
+                    <td>${pair.mentor.company}</td>
+                    <td><span class="score-badge">${pair.score}%</span></td>
+                    <td><button class="button-danger" onclick="undoApproval(${idx})">Undo</button></td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('approvedList').innerHTML = html;
+        }
+
+        function undoApproval(idx) {
+            if (confirm('Are you sure you want to undo this approval?')) {
+                const pair = state.approvedPairings[idx];
+                addAuditLog('PAIRING_UNDONE', `Undid approval: ${pair.mentee.name} ↔ ${pair.mentor.name}`);
+                
+                state.approvedPairings.splice(idx, 1);
+                localStorage.setItem('approvedPairings', JSON.stringify(state.approvedPairings));
+                refreshApproved();
+            }
+        }
+
+        // ============================================
+        // EXPORT FUNCTIONS
+        // ============================================
+        function exportMailMergeCSV() {
+            if (state.approvedPairings.length === 0) {
+                alert('No approved pairings to export');
+                return;
+            }
+
+            let csv = 'recipient_name,recipient_role,partner_name,partner_company,partner_sector,rationale,suggested_first_step\n';
+            
+            state.approvedPairings.forEach(pair => {
+                const menteeRow = `"${pair.mentee.name}","${pair.mentee.role}","${pair.mentor.name}","${pair.mentor.company}","${pair.mentor.sector}","${pair.rationale}","Schedule your first Level 10 meeting within 7 days"`;
+                const mentorRow = `"${pair.mentor.name}","${pair.mentor.role}","${pair.mentee.name}","${pair.mentee.company}","${pair.mentee.sector}","${pair.rationale}","Schedule your first Level 10 meeting within 7 days"`;
+                
+                csv += menteeRow + '\n';
+                csv += mentorRow + '\n';
+            });
+
+            downloadFile(csv, 'WIM_MailMerge.csv', 'text/csv');
+            addAuditLog('EXPORT_MAIL_MERGE', `Exported mail merge CSV with ${state.approvedPairings.length} pairs`);
+        }
+
+        function exportAuditJSON() {
+            const auditData = {
+                exportDate: new Date().toISOString(),
+                submissions: state.submissions,
+                approvedPairings: state.approvedPairings,
+                auditTrail: state.auditTrail
+            };
+
+            downloadFile(JSON.stringify(auditData, null, 2), 'WIM_Audit.json', 'application/json');
+            addAuditLog('EXPORT_AUDIT', 'Exported audit JSON');
+        }
+
+        function triggerReveal() {
+            if (state.approvedPairings.length === 0) {
+                alert('No approved pairings to reveal');
+                return;
+            }
+
+            if (confirm(`Reveal ${state.approvedPairings.length} pairings to participants? This action cannot be undone.`)) {
+                addAuditLog('MATCH_REVEAL', `Triggered match reveal for ${state.approvedPairings.length} pairs`);
+                alert('Match reveal triggered! Emails will be sent to all participants.');
+            }
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type: type });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        // ============================================
+        // AUDIT TRAIL
+        // ============================================
+        function addAuditLog(action, details) {
+            state.auditTrail.push({
+                timestamp: new Date().toISOString(),
+                action: action,
+                details: details
+            });
+            localStorage.setItem('auditTrail', JSON.stringify(state.auditTrail));
+        }
+
+        function refreshAuditTrail() {
+            if (state.auditTrail.length === 0) {
+                document.getElementById('auditTrail').innerHTML = '<div class="no-data"><p>No audit trail entries yet</p></div>';
+                return;
+            }
+
+            let html = '<table><thead><tr><th>Timestamp</th><th>Action</th><th>Details</th></tr></thead><tbody>';
+            
+            [...state.auditTrail].reverse().forEach(entry => {
+                const date = new Date(entry.timestamp).toLocaleString();
+                html += `<tr>
+                    <td>${date}</td>
+                    <td><strong>${entry.action}</strong></td>
+                    <td>${entry.details}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('auditTrail').innerHTML = html;
+        }
+
+        // ============================================
+        // UTILITIES
+        // ============================================
+        function showAlert(elementId, message, type) {
+            const alert = document.getElementById(elementId);
+            alert.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                alert.innerHTML = '';
+            }, 5000);
+        }
+
+        // Initialize
+        window.onload = function() {
+            if (state.formUrl) {
+                document.getElementById('formUrl').value = state.formUrl;
+            }
+        };
+    </script>
+</body>
+</html>
